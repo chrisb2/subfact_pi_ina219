@@ -95,7 +95,7 @@ class INA219:
 # ===========================================================================
 
 	# Constructor
-	def __init__(self, address=0x40, debug=False):
+	def __init__(self, address=__INA219_ADDRESS, debug=False):
 		self.i2c = Adafruit_I2C(address, debug=False)
 		self.address = address
 		self.debug = debug
@@ -129,10 +129,14 @@ class INA219:
 		self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
 
 	def getBusVoltage_raw(self):
-		result = self.i2c.readU16(self.__INA219_REG_BUSVOLTAGE)
-		
-		# Shift to the right 3 to drop CNVR and OVF and multiply by LSB
-		return (result >> 3) * 4
+		# Reference: https://forums.adafruit.com/viewtopic.php?f=8&t=36007&start=30#p344324
+		result = self.i2c.readList(self.__INA219_REG_BUSVOLTAGE,2)
+		if (result[0] >> 7 == 1):
+			testint = (result[0]*256 + result[1])
+			othernew = self.twosToInt(testint, 16)
+			return othernew
+		else:
+			return (result[0] << 8) | (result[1])
 		
 	def getShuntVoltage_raw(self):
 		result = self.i2c.readList(self.__INA219_REG_SHUNTVOLTAGE,2)
@@ -166,8 +170,9 @@ class INA219:
 		return value * 0.01
 		
 	def getBusVoltage_V(self):
+		# Reference: https://forums.adafruit.com/viewtopic.php?f=8&t=36007&start=30#p344324
 		value = self.getBusVoltage_raw()
-		return value * 0.001
+		return value * 0.0005
 		
 	def getCurrent_mA(self):
 		valueDec = self.getCurrent_raw()
