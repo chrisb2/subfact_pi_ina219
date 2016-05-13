@@ -176,10 +176,10 @@ class INA219:
 		
 	def getCurrent_mA(self):
 		valueDec = self.getCurrent_raw()
-		valueDec /= self.ina219_currentDivider_mA
+		valueDec /= float(self.ina219_currentDivider_mA)
 		return valueDec
 		
 	def getPower_mW(self):
 		valueDec = self.getPower_raw()
-		valueDec /= self.ina219_powerDivider_mW
+		valueDec /= float(self.ina219_powerDivider_mW)
 		return valueDec
