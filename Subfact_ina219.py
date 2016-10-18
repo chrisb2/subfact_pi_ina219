@@ -100,7 +100,8 @@ class INA219:
 		self.address = address
 		self.debug = debug
 		
-		self.ina219SetCalibration_32V_2A()
+		self.ina219SetCalibration_16V_400mA()
+		# self.ina219SetCalibration_32V_2A()
 	
 	def twosToInt(self, val, len):
 		# Convert twos compliment to integer
@@ -127,6 +128,24 @@ class INA219:
 		
 		bytes = [(config >> 8) & 0xFF, config & 0xFF]
 		self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
+
+        def ina219SetCalibration_16V_400mA(self):
+                self.ina219_currentDivider_mA = 20  # Current LSB = 50uA per bit (1000/50 = 20)
+                self.ina219_powerDivider_mW = 1     # Power LSB = 1mW per bit (2/1)
+
+                # Set Calibration register to 'Cal' calculated above
+                bytes = [(0x2000 >> 8) & 0xFF, 0x2000 & 0xFF]
+                self.i2c.writeList(self.__INA219_REG_CALIBRATION, bytes)
+
+                # Set Config register to take into account the settings above
+                config = self.__INA219_CONFIG_BVOLTAGERANGE_16V | \
+                                 self.__INA219_CONFIG_GAIN_1_40MV | \
+                                 self.__INA219_CONFIG_BADCRES_12BIT | \
+                                 self.__INA219_CONFIG_SADCRES_12BIT_1S_532US | \
+                                 self.__INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
+
+                bytes = [(config >> 8) & 0xFF, config & 0xFF]
+                self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
 
 	def getBusVoltage_raw(self):
 		# Reference: https://forums.adafruit.com/viewtopic.php?f=8&t=36007&start=30#p344324
