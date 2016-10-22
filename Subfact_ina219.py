@@ -111,6 +111,12 @@ class INA219:
 
 		return val
 
+	def ina219Powerdown(self):
+                config = self.__INA219_CONFIG_MODE_POWERDOWN 
+
+                bytes = [(config >> 8) & 0xFF, config & 0xFF]
+                self.i2c.writeList(self.__INA219_REG_CONFIG, bytes)
+
 	def ina219SetCalibration_32V_2A(self):
 		self.ina219_currentDivider_mA = 10  # Current LSB = 100uA per bit (1000/100 = 10)
 		self.ina219_powerDivider_mW = 2     # Power LSB = 1mW per bit (2/1)
@@ -141,7 +147,7 @@ class INA219:
                 config = self.__INA219_CONFIG_BVOLTAGERANGE_16V | \
                                  self.__INA219_CONFIG_GAIN_1_40MV | \
                                  self.__INA219_CONFIG_BADCRES_12BIT | \
-                                 self.__INA219_CONFIG_SADCRES_12BIT_1S_532US | \
+                                 self.__INA219_CONFIG_SADCRES_12BIT_8S_4260US | \
                                  self.__INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
 
                 bytes = [(config >> 8) & 0xFF, config & 0xFF]
@@ -156,7 +162,7 @@ class INA219:
 			return othernew
 		else:
 			return (result[0] << 8) | (result[1])
-		
+
 	def getShuntVoltage_raw(self):
 		result = self.i2c.readList(self.__INA219_REG_SHUNTVOLTAGE,2)
 		if (result[0] >> 7 == 1):
